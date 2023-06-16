@@ -1,2 +1,2 @@
-# stupidgames.github.io
+# stupidgame.github.io
 my site
