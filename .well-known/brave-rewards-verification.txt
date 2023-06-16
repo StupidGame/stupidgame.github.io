@@ -1,0 +1,4 @@
+This is a Brave Rewards publisher verification file.
+
+Domain: stupidgame.github.io
+Token: c9416239b407a4c299592864841573b6a21786f3c6f8bc3e58333b92f716e29b
