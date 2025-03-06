@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <title>デザイアカードジェネレーター</title>
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="デザイアカードジェネレーター">
+  <meta property="og:description" content="このサイトはデザイアカードを生成するツールです。あなたの願いを形にします。">
+  <meta property="og:image" content="https://stupidgame.github.io/Desire.png">
+  <meta property="og:url" content="https://yourdomain.github.io">
+  <meta property="og:type" content="website">
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="デザイアカードジェネレーター">
+  <meta name="twitter:description" content="このサイトはデザイアカードを生成するツールです。あなたの願いを形にします。">
+  <meta name="twitter:image" content="https://stupidgame.github.io/Desire.png">
   <style>
     /* フォント読み込み（TTF形式） */
     @font-face {
@@ -126,17 +137,19 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     
-    // 背景画像
+    // 背景画像：同一オリジンのため crossOrigin を設定
     const bgImage = new Image();
-    bgImage.src = 'Desire.png'; // 同一ディレクトリに配置
+    bgImage.crossOrigin = 'anonymous';
+    bgImage.src = 'Desire.png';
     bgImage.onload = () => {
       canvas.width = bgImage.width;
       canvas.height = bgImage.height;
       draw();
     };
     
-    // オーバーレイ画像（Done.png）
+    // オーバーレイ画像（Done.png）にも crossOrigin を設定
     const overlayImage = new Image();
+    overlayImage.crossOrigin = 'anonymous';
     overlayImage.src = 'Done.png';
     
     // ======== 入力要素の取得 ========
@@ -188,11 +201,9 @@
     
     // ======== 描画処理 ========
     function draw() {
-      // 背景画像描画
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(bgImage, 0, 0);
       
-      // ----- メインテキスト描画準備 -----
       const mainText = mainTextEl.value;
       const mainFontSize = parseInt(mainFontSizeEl.value, 10) || 40;
       const mainMaxWidth = parseInt(mainMaxWidthEl.value, 10) || 600;
@@ -211,7 +222,6 @@
         lineHeight
       } = measureWrapText(ctx, mainText, mainMaxWidth, mainFontSize);
       
-      // メインテキストの仮のボックス（左上はオフセット付き）
       const mainBox = {
         x: mainOffsetX,
         y: mainOffsetY,
@@ -221,7 +231,6 @@
         lineHeight: lineHeight
       };
       
-      // ----- 名前テキスト描画準備 -----
       const nameText = nameTextEl.value.trim();
       const nameFontSize = parseInt(nameFontSizeEl.value, 10) || 30;
       const nameOffsetX = parseInt(nameOffsetXEl.value, 10) || 0;
@@ -231,8 +240,7 @@
       if (nameText) {
         ctx.font = `${nameFontSize}px "KaizouNextUPB", sans-serif`;
         const nameWidth = ctx.measureText(nameText).width;
-        const nameHeight = nameFontSize; // 単一行分と仮定
-        // 名前はメインテキストの右下 + オフセットに配置
+        const nameHeight = nameFontSize;
         const nx = mainBox.x + mainBox.width + nameOffsetX;
         const ny = mainBox.y + mainBox.height + nameOffsetY;
         nameBox = {
@@ -245,7 +253,6 @@
         };
       }
       
-      // ----- 全体のバウンディングボックスを計算 -----
       let minX = mainBox.x;
       let minY = mainBox.y;
       let maxX = mainBox.x + mainBox.width;
@@ -261,12 +268,9 @@
       const entireWidth = maxX - minX;
       const entireHeight = maxY - minY;
       
-      // 画像中央に全体を配置するためのオフセット
       const centerOffsetX = (canvas.width - entireWidth) / 2 - minX;
       const centerOffsetY = (canvas.height - entireHeight) / 2 - minY;
       
-      // ----- 実際の描画 -----
-      // メインテキスト
       ctx.font = `${mainFontSize}px "KaizouNextUPB", sans-serif`;
       ctx.fillStyle = 'black';
       ctx.textBaseline = 'top';
@@ -278,7 +282,6 @@
         currentY += mainBox.lineHeight;
       });
       
-      // 名前テキスト
       if (nameBox) {
         ctx.font = `${nameBox.fontSize}px "KaizouNextUPB", sans-serif`;
         ctx.textBaseline = 'top';
@@ -286,31 +289,23 @@
         ctx.fillText(nameBox.text, nameBox.x + centerOffsetX, nameBox.y + centerOffsetY);
       }
       
-      // ----- オーバーレイ画像（Done.png）を描画 -----
       if (overlayCheckbox.checked && overlayImage.complete) {
-        // 画像を縮小して描画する (例: 60%に縮小)
         const overlayScale = 0.6;
         const scaledWidth = overlayImage.width * overlayScale;
         const scaledHeight = overlayImage.height * overlayScale;
-        
-        // キャンバス中央に配置
         const overlayX = (canvas.width - scaledWidth) / 2;
         const overlayY = (canvas.height - scaledHeight) / 2;
-        
         ctx.drawImage(overlayImage, overlayX, overlayY, scaledWidth, scaledHeight);
       }
     }
     
-    // ======== リアルタイム反映 ========
-    [
-      mainTextEl, mainFontSizeEl, mainMaxWidthEl, mainOffsetXEl, mainOffsetYEl,
-      nameTextEl, nameFontSizeEl, nameOffsetXEl, nameOffsetYEl, overlayCheckbox
-    ].forEach(el => {
-      el.addEventListener('input', draw);
-      el.addEventListener('change', draw);
-    });
+    [mainTextEl, mainFontSizeEl, mainMaxWidthEl, mainOffsetXEl, mainOffsetYEl,
+     nameTextEl, nameFontSizeEl, nameOffsetXEl, nameOffsetYEl, overlayCheckbox]
+      .forEach(el => {
+        el.addEventListener('input', draw);
+        el.addEventListener('change', draw);
+      });
     
-    // ======== 画像保存 ========
     saveBtn.addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = 'Desire.png';
